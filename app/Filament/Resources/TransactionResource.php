@@ -21,86 +21,146 @@ class TransactionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\DatePicker::make('transaction_date')
-                    ->required()
-                    ->default(now()),
-
-                Forms\Components\Repeater::make('items')
-                    ->relationship()
+                Forms\Components\Section::make()
                     ->schema([
-                        Forms\Components\Select::make('medicine_id')
-                            ->label('Medicine')
-                            ->options(Medicine::query()->pluck('nama_obat', 'id'))
-                            ->searchable()
+                        Forms\Components\DatePicker::make('transaction_date')
                             ->required()
-                            ->reactive()
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                $medicine = Medicine::find($state);
-                                if ($medicine) {
-                                    $set('price', $medicine->harga_obat);
-                                    $set('stock', $medicine->stok_obat);
-                                }
-                            })
-                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
-
-                        Forms\Components\TextInput::make('stock')
-                            ->label('Stock Available')
-                            ->disabled()
-                            ->dehydrated(false)
-                            ->numeric(),
-
-                        Forms\Components\TextInput::make('quantity')
+                            ->default(now()),
+                        Forms\Components\TextInput::make('total_amount')
                             ->required()
                             ->numeric()
-                            ->default(1)
-                            ->minValue(1)
-                            ->reactive()
-                            ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
-                                $price = $get('price');
-                                $set('total_price', $state * $price);
-                            })
-                            ->rules([
-                                fn (Forms\Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                    $medicineId = $get('medicine_id');
-                                    if ($medicineId) {
-                                        $medicine = Medicine::find($medicineId);
-                                        if ($medicine && $value > $medicine->stok_obat) {
-                                            $fail("Quantity exceeds available stock ({$medicine->stok_obat}).");
+                            ->prefix('Rp')
+                            ->readOnly(),
+                    ])->columns(2),
+
+                Forms\Components\Section::make('Transaction Items')
+                    ->schema([
+                        Forms\Components\Repeater::make('items')
+                            ->relationship()
+                            ->schema([
+                                Forms\Components\Select::make('medicine_id')
+                                    ->label('Medicine')
+                                    ->options(Medicine::query()->pluck('nama_obat', 'id'))
+                                    ->searchable()
+                                    ->required()
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get, Forms\Components\Component $component) {
+                                        $medicine = Medicine::find($state);
+                                        $price = 0;
+                                        $stock = 0;
+
+                                        if ($medicine) {
+                                            $price = $medicine->harga_obat;
+                                            $stock = $medicine->stok_obat;
+                                            $set('price', $price);
+                                            $set('stock', $stock);
+                                        } else {
+                                            $set('price', 0);
+                                            $set('stock', 0);
                                         }
+
+                                        $quantity = intval($get('quantity') ?? 1);
+                                        $totalPrice = $price * $quantity;
+                                        $set('total_price', $totalPrice);
+
+                                        // Recalculate global total
+                                        $items = $get('../../items');
+                                        $currentUuid = last(explode('.', $component->getContainer()->getStatePath()));
+                                        $total = 0;
+
+                                        if (is_array($items)) {
+                                            foreach ($items as $uuid => $item) {
+                                                if ($uuid === $currentUuid) {
+                                                    $total += $totalPrice;
+                                                } else {
+                                                    $itemPrice = floatval($item['price'] ?? 0);
+                                                    $itemQty = intval($item['quantity'] ?? 0);
+                                                    $total += $itemPrice * $itemQty;
+                                                }
+                                            }
+                                        }
+                                        $set('../../total_amount', $total);
+                                    })
+                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                    ->columnSpan(2), // Give medicine more space
+
+                                Forms\Components\TextInput::make('stock')
+                                    ->label('Stock')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->numeric()
+                                    ->columnSpan(1),
+
+                                Forms\Components\TextInput::make('quantity')
+                                    ->required()
+                                    ->numeric()
+                                    ->default(1)
+                                    ->minValue(1)
+                                    ->live() // Live update with debounce
+                                    ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set, Forms\Components\Component $component) {
+                                        $price = floatval($get('price') ?? 0);
+                                        $quantity = intval($state);
+                                        $totalPrice = $quantity * $price;
+                                        $set('total_price', $totalPrice);
+
+                                        // Recalculate global total
+                                        $items = $get('../../items');
+                                        $currentUuid = last(explode('.', $component->getContainer()->getStatePath()));
+                                        $total = 0;
+
+                                        if (is_array($items)) {
+                                            foreach ($items as $uuid => $item) {
+                                                if ($uuid === $currentUuid) {
+                                                    $total += $totalPrice;
+                                                } else {
+                                                    $itemPrice = floatval($item['price'] ?? 0);
+                                                    $itemQty = intval($item['quantity'] ?? 0);
+                                                    $total += $itemPrice * $itemQty;
+                                                }
+                                            }
+                                        }
+                                        $set('../../total_amount', $total);
+                                    })
+                                    ->rules([
+                                        fn (Forms\Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                            $medicineId = $get('medicine_id');
+                                            if ($medicineId) {
+                                                $medicine = Medicine::find($medicineId);
+                                                if ($medicine && $value > $medicine->stok_obat) {
+                                                    $fail("Exceeds stock ({$medicine->stok_obat})");
+                                                }
+                                            }
+                                        },
+                                    ])
+                                    ->columnSpan(1),
+
+                                Forms\Components\TextInput::make('price')
+                                    ->required()
+                                    ->numeric()
+                                    ->prefix('Rp')
+                                    ->readOnly()
+                                    ->columnSpan(1),
+
+                                Forms\Components\TextInput::make('total_price')
+                                    ->required()
+                                    ->numeric()
+                                    ->prefix('Rp')
+                                    ->readOnly()
+                                    ->columnSpan(1),
+                            ])
+                            ->columns(6) // Increased columns for better spacing
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                                $items = $get('items');
+                                $total = 0;
+                                if ($items) {
+                                    foreach ($items as $item) {
+                                        $total += $item['total_price'] ?? 0;
                                     }
-                                },
-                            ]),
-
-                        Forms\Components\TextInput::make('price')
-                            ->required()
-                            ->numeric()
-                            ->prefix('Rp')
-                            ->readOnly(),
-
-                        Forms\Components\TextInput::make('total_price')
-                            ->required()
-                            ->numeric()
-                            ->prefix('Rp')
-                            ->readOnly(),
-                    ])
-                    ->columns(5)
-                    ->live()
-                    ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
-                        $items = $get('items');
-                        $total = 0;
-                        if ($items) {
-                            foreach ($items as $item) {
-                                $total += $item['total_price'] ?? 0;
-                            }
-                        }
-                        $set('total_amount', $total);
-                    }),
-
-                Forms\Components\TextInput::make('total_amount')
-                    ->required()
-                    ->numeric()
-                    ->prefix('Rp')
-                    ->readOnly(),
+                                }
+                                $set('total_amount', $total);
+                            }),
+                    ]),
             ]);
     }
 
@@ -126,7 +186,7 @@ class TransactionResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('print')
                     ->label('Print Receipt')
                     ->icon('heroicon-o-printer')
@@ -152,7 +212,7 @@ class TransactionResource extends Resource
         return [
             'index' => Pages\ListTransactions::route('/'),
             'create' => Pages\CreateTransaction::route('/create'),
-            'edit' => Pages\EditTransaction::route('/{record}/edit'),
+            'view' => Pages\ViewTransaction::route('/{record}'),
         ];
     }
 }

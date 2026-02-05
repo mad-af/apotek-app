@@ -9,6 +9,10 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class MedicineStockTable extends BaseWidget
 {
+    protected static ?int $sort = 2;
+
+    protected int|string|array $columnSpan = 'full';
+
     public function table(Table $table): Table
     {
         return $table
@@ -22,10 +26,13 @@ class MedicineStockTable extends BaseWidget
                 Tables\Columns\TextColumn::make('stok_obat')
                     ->label('Stock')
                     ->sortable()
-                    ->color(fn (string $state): string => $state < 10 ? 'danger' : 'success'),
+                    ->badge()
+                    ->color(fn ($state): string => $state < 10 ? 'danger' : 'success'),
                 Tables\Columns\TextColumn::make('harga_obat')
                     ->money('IDR')
                     ->sortable(),
-            ]);
+            ])
+            ->paginated([5, 10, 25])
+            ->defaultPaginationPageOption(5);
     }
 }
