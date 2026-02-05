@@ -74,8 +74,9 @@
                             </span>
                         </div>
                         <p class="text-gray-500 text-sm mt-1">Stock: <span x-text="medicine.stok_obat"></span></p>
-                        <div class="mt-4">
+                        <div class="mt-4 flex items-baseline">
                             <span class="text-xl font-bold text-blue-600" x-text="formatCurrency(medicine.harga_obat)"></span>
+                            <span class="text-sm text-gray-500 ml-1" x-text="'/ ' + (medicine.satuan_obat || 'Unit')"></span>
                         </div>
                     </div>
                     <div class="p-4 bg-gray-50 border-t border-gray-100">
@@ -151,7 +152,7 @@
                                                             <h3 x-text="item.nama_obat"></h3>
                                                             <p class="ml-4" x-text="formatCurrency(item.price * item.quantity)"></p>
                                                         </div>
-                                                        <p class="mt-1 text-sm text-gray-500" x-text="formatCurrency(item.price) + ' / unit'"></p>
+                                                        <p class="mt-1 text-sm text-gray-500" x-text="formatCurrency(item.price) + ' / ' + (item.satuan_obat || 'Unit')"></p>
                                                     </div>
                                                     <div class="flex-1 flex items-end justify-between text-sm">
                                                         <div class="flex items-center border border-gray-300 rounded">
@@ -217,7 +218,7 @@
         style="display: none;"
     >
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div x-show="orderSuccess" class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div x-show="orderSuccess" class="fixed inset-0 transition-opacity" aria-hidden="true" @click="orderSuccess = false">
                 <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
 
@@ -228,7 +229,7 @@
                 x-transition:enter="ease-out duration-300"
                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6"
+                class="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6"
             >
                 <div>
                     <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
@@ -311,6 +312,7 @@
                         this.cart.push({
                             medicine_id: medicine.id,
                             nama_obat: medicine.nama_obat,
+                            satuan_obat: medicine.satuan_obat,
                             price: medicine.harga_obat,
                             quantity: 1,
                             max_stock: medicine.stok_obat

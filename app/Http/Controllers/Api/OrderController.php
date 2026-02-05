@@ -15,10 +15,11 @@ class OrderController extends Controller
     // TASK 8: View Medicine Stock
     public function index()
     {
-        $medicines = Medicine::select('id', 'nama_obat', 'stok_obat', 'harga_obat')->get();
+        $medicines = Medicine::select('id', 'nama_obat', 'satuan_obat', 'stok_obat', 'harga_obat')->get();
+
         return response()->json([
             'status' => 'success',
-            'data' => $medicines
+            'data' => $medicines,
         ]);
     }
 
@@ -35,7 +36,7 @@ class OrderController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -45,7 +46,7 @@ class OrderController extends Controller
             if ($medicine->stok_obat < $item['quantity']) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => "Stock not sufficient for medicine: {$medicine->nama_obat}. Available: {$medicine->stok_obat}"
+                    'message' => "Stock not sufficient for medicine: {$medicine->nama_obat}. Available: {$medicine->stok_obat}",
                 ], 400);
             }
         }
@@ -56,14 +57,14 @@ class OrderController extends Controller
 
             $transaction = Transaction::create([
                 'transaction_date' => $request->transaction_date,
-                'total_amount' => 0 
+                'total_amount' => 0,
             ]);
 
             foreach ($request->items as $itemData) {
                 $medicine = Medicine::find($itemData['medicine_id']);
                 $price = $medicine->harga_obat;
                 $totalPrice = $price * $itemData['quantity'];
-                
+
                 // Using create() triggers the 'created' event in TransactionItem model
                 // which handles stock decrement automatically.
                 TransactionItem::create([
@@ -84,14 +85,15 @@ class OrderController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Order created successfully',
-                'data' => $transaction->load('items')
+                'data' => $transaction->load('items'),
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
