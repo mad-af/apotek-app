@@ -72,7 +72,7 @@ Ikuti langkah-langkah berikut untuk menjalankan project di lokal komputer Anda:
 
 Jika menggunakan seeder bawaan (`DatabaseSeeder`), Anda dapat login menggunakan:
 
-- **Email**: `test@example.com`
+- **Email**: `admin@apotek.com`
 - **Password**: `password` (default password factory Laravel)
 
 ## 📝 Lisensi
