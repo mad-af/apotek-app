@@ -1,59 +1,80 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Apotek App
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem Informasi Manajemen Apotek Modern yang dibangun menggunakan **Laravel 12** dan **FilamentPHP v3**. Aplikasi ini dirancang untuk memudahkan pengelolaan stok obat, distributor, dan transaksi penjualan dengan antarmuka yang bersih dan responsif.
 
-## About Laravel
+## 🚀 Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 1. Manajemen Inventaris
+- **Data Obat**: Pengelolaan lengkap data obat termasuk kode, nama, harga, stok, dan satuan.
+- **Distributor**: Manajemen data supplier/distributor obat.
+- **Monitoring Stok**: Widget dashboard untuk memantau stok yang menipis secara real-time.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 2. Transaksi (Point of Sales)
+- **Input Penjualan**: Form transaksi yang intuitif dengan fitur *auto-calculate*.
+- **Live Update**: Total harga terhitung otomatis saat jumlah barang diubah.
+- **Validasi Stok**: Sistem mencegah penjualan melebihi stok yang tersedia.
+- **Struk Digital**: Kemampuan untuk mencetak struk transaksi (Print View).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 3. Katalog Publik (Frontend)
+- **Katalog Online**: Halaman depan yang menampilkan daftar obat tersedia untuk pelanggan.
+- **Pemesanan via API**: Integrasi frontend menggunakan Alpine.js yang berkomunikasi langsung dengan API backend.
+- **Keranjang Belanja**: Fitur "Add to Cart" sederhana tanpa perlu login.
 
-## Learning Laravel
+### 4. Laporan & Statistik
+- **Dashboard Admin**: Ringkasan statistik penjualan, total transaksi, dan jumlah distributor.
+- **Riwayat Transaksi**: Log lengkap semua transaksi yang terjadi.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🛠️ Teknologi yang Digunakan
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Backend Framework**: Laravel 12
+- **Admin Panel**: FilamentPHP v3
+- **Frontend**: Blade Templates + Alpine.js
+- **Database**: MySQL / SQLite
+- **Styling**: Tailwind CSS
 
-## Laravel Sponsors
+## 📦 Instalasi
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Ikuti langkah-langkah berikut untuk menjalankan project di lokal komputer Anda:
 
-### Premium Partners
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/username/apotek-app.git
+   cd apotek-app
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+2. **Install Dependencies**
+   ```bash
+   composer install
+   npm install && npm run build
+   ```
 
-## Contributing
+3. **Konfigurasi Environment**
+   Salin file `.env.example` menjadi `.env` dan sesuaikan konfigurasi database Anda.
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4. **Migrasi Database**
+   Jalankan migrasi untuk membuat tabel-tabel yang diperlukan.
+   ```bash
+   php artisan migrate --seed
+   ```
 
-## Code of Conduct
+5. **Jalankan Aplikasi**
+   ```bash
+   php artisan serve
+   ```
+   Akses aplikasi di: `http://localhost:8000`
+   Akses admin panel di: `http://localhost:8000/admin`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 👤 Akun Demo
 
-## Security Vulnerabilities
+Jika menggunakan seeder bawaan (`DatabaseSeeder`), Anda dapat login menggunakan:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **Email**: `test@example.com`
+- **Password**: `password` (default password factory Laravel)
 
-## License
+## 📝 Lisensi
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Project ini bersifat open-source di bawah lisensi [MIT](https://opensource.org/licenses/MIT).
