@@ -19,6 +19,10 @@
                 <h1 class="text-xl font-bold text-gray-800">Apotek Public</h1>
             </div>
             <div class="flex items-center gap-4">
+                <a href="{{ url('/admin') }}" class="text-sm font-medium text-gray-700 hover:text-blue-600">
+                    Admin
+                </a>
+
                 @if (Route::has('login'))
                     <div class="hidden md:flex gap-4">
                         @auth
